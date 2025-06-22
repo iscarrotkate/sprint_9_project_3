@@ -12,6 +12,7 @@ from pages.signup_page import SignupPage
 from pages.signup_page import BasePage
 from pages.create_recipe_page import CreateRecipePage
 from urls.urls import BASE_URL_BACK
+from selenium.webdriver.chrome.options import Options
 
 
 @pytest.fixture(scope="session")
@@ -23,14 +24,21 @@ def client():
 def account_service(client):
     return SignupService(client)
 
-@pytest.fixture
-def driver(request):
-    browser = get_browser("chrome")
-    try:
-        yield browser
-    finally:
-        browser.quit()
 
+@pytest.fixture
+def driver():
+    chrome_options = Options()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--headless")  # Если нужно запустить в headless режиме
+
+    # Подключение к Selenoid
+    driver = webdriver.Remote(
+        command_executor='http://selenoid:4444/wd/hub',
+        options=chrome_options
+    )
+    yield driver
+    driver.quit()
 
 def get_browser(browser):
     if browser == "chrome":
